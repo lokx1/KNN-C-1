@@ -1,0 +1,47 @@
+Line 3 drop 0 29 1x1 : true
+Line 4 drop -1 6 1x1 : false
+Line 5 drop 1 1 1x1 : true
+Line 6 drop 1 7 1x1 : false
+Line 7 drop 0 2 1x1 : true
+Line 8 getShape : 34 2
+Line 9 columns : label 1x2
+Line 10 printHead 100 100
+label 1x2
+1 52
+9 50
+0 56
+6 23
+2 99
+6 18
+0 77
+8 95
+9 62
+5 12
+0 36
+5 18
+2 37
+9 49
+3 14
+3 16
+6 98
+7 76
+3 42
+1 18
+2 91
+0 0
+8 91
+5 90
+5 88
+0 44
+3 86
+1 95
+7 17
+5 50
+9 86
+5 86
+5 72
+5 34
+Line y_predict : 
+label
+1
+Accuracy: -1
