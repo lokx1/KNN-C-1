@@ -90,28 +90,40 @@ Dataset& Dataset::operator=(const Dataset& other)
 }
 bool Dataset::loadFromCSV(const char* fileName)
 {   
-      ifstream data1(fileName);
-      if(data1.is_open()){
-      string chuoi;
-      int num;
-      data1 >> chuoi;
-      for(int i =0;i<chuoi.length();i++){
-            if(chuoi[i]==',') chuoi[i]=' ';
-      }
-      stringstream ss(chuoi);
-      while(ss>>chuoi) NameCol->push_back(chuoi);
-      while(data1>>chuoi) {
-        for(int i=0;i<chuoi.length();i++){
-            if(chuoi[i]==',') chuoi[i]=' ';
+      std::ifstream data1(fileName);
+    if (!data1.is_open()) {
+        return false;
+    }
+
+    std::string line;
+
+    // Đọc và xử lý dòng đầu tiên chứa tiêu đề cột
+    if (std::getline(data1, line)) {
+        std::stringstream ss(line);
+        std::string item;
+        while (std::getline(ss, item, ',')) {
+            NameCol->push_back(item);
         }
-    stringstream ss(chuoi);
-    List<int>* temp = new Image<int>();
-    while(ss>>num) temp->push_back(num);
-     data->push_back(temp);
-      }
+    }
+
+    // Đọc và xử lý các dòng tiếp theo chứa dữ liệu
+    while (std::getline(data1, line)) {
+        std::stringstream ss(line);
+        std::string item;
+        List<int>* temp = new Image<int>();
+        while (std::getline(ss, item, ',')) {
+            try {
+                int num = std::stoi(item); // Chuyển đổi string sang int
+                temp->push_back(num);
+            } catch (const std::exception& e) {
+                std::cerr << "Lỗi chuyển đổi dữ liệu: " << e.what() << std::endl;
+                // Xử lý phù hợp hoặc bỏ qua giá trị không hợp lệ
+            }
+        }
+        data->push_back(temp);
+    }
+
     return true;
-      }
-      return false;
 }
 void Dataset::getShape(int& nRows, int& nCols) const {
    nRows = this->data->length();

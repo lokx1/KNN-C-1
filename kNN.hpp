@@ -137,7 +137,7 @@ public:
     T& get(int index) const{
         if(index < 0 || index >= this->size)  throw out_of_range("get(): Out of range");
         Node *temp=head;
-        for(int i=0;i<index;i++)temp=temp->next;
+        for(int i=0;i<index;i++) temp=temp->next;
         return temp->pointer;
     }
 
@@ -159,9 +159,10 @@ public:
     }
 
     void print() const{
-        Node* temp = head;
+    if(size==0) return;
+    Node* temp = head;
     while (temp != nullptr) {
-        cout << temp->pointer << (temp->next ? " " : "\n");
+        cout << temp->pointer << (temp->next ? " " : " \n");
         temp = temp->next;
     }
     }
@@ -223,10 +224,10 @@ public:
     {   
           if (this->data->length() != y_test.data->length()) return -1;
 
-    int correct_predictions = 0;
+    double correct_predictions = 0;
     for (int i = 0; i < this->data->length(); i++) {
-        int this_label = this->data->get(i)->get(0);
-        int test_label = y_test.data->get(i)->get(0);
+        double this_label = this->data->get(i)->get(0);
+        double test_label = y_test.data->get(i)->get(0);
         if (this_label == test_label) {
             correct_predictions++;
         }
@@ -252,7 +253,7 @@ result.data = new Image<List<int>*>();
         indices[j] = j; // Lưu chỉ số để sau này có thể truy xuất nhãn
     }
     
-   quickSelect(distances, indices, 0, X_train.data->length() - 1, k-1);     
+   quickSelect(distances, indices, 0, X_train.data->length()-1 , k);     
    
       int labelCounts[10] = {0,0,0,0,0,0,0,0,0,0};
     for (int idx = 0; idx < k; ++idx) {
