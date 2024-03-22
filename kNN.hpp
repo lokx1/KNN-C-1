@@ -5,9 +5,11 @@
 /* TODO: Please design your data structure carefully so that you can work with the given dataset
  *       in this assignment. The below structures are just some suggestions.
  */
+
 int partition(double* arr, int* labels, int low, int high);
 
-void quickSelect(double* arr, int* labels, int low, int high, int k);
+void quickSelect(double* arr, int* labels, int low, int high);
+
 
 
 template<typename T>
@@ -26,8 +28,8 @@ public:
     virtual void reverse() = 0;
 
     
-    virtual List<T>* subList(int start, int end) = 0;
-    
+    // virtual List<T>* subList(int start, int end) = 0;
+    virtual void printTtoE(int start, int end)=0;
     
 };
 
@@ -67,7 +69,7 @@ public:
             tail=temp;
             
         }
-        this->size++;
+       size++;
 
     }
     void push_front(T value){
@@ -79,7 +81,7 @@ public:
         else {
             head=new Node(value,head);
         }
-        this->size++;
+       size++;
 
     }
     void insert(int index, T value){
@@ -108,16 +110,16 @@ public:
     
     void remove(int index){
         if(index < 0 || index >= size) return;
-        Node *deleteN;
-        
+        Node *deleteN;     
         if(this->size==1){
             deleteN= head;
             head=tail=nullptr;
-            
+              
         }
         else if( index==0){
             deleteN=head;
             head=head->next;
+              
         }
         else {
             Node *temp=head;
@@ -129,13 +131,13 @@ public:
 
         }
     delete deleteN;
-    this->size--;
+    size--;
 
 
     }
 
     T& get(int index) const{
-        if(index < 0 || index >= this->size)  throw out_of_range("get(): Out of range");
+        if(index < 0 || index >= this->length())  throw out_of_range("get(): Out of range");
         Node *temp=head;
         for(int i=0;i<index;i++) temp=temp->next;
         return temp->pointer;
@@ -162,7 +164,7 @@ public:
     if(size==0) return;
     Node* temp = head;
     while (temp != nullptr) {
-        cout << temp->pointer << (temp->next ? " " : " \n");
+        cout << temp->pointer << (temp->next ? " " : "\n");
         temp = temp->next;
     }
     }
@@ -183,21 +185,43 @@ public:
 
     
 
-    List<T>* subList(int start, int end){
-       if(this->size<=start) return nullptr;
-       Node *temp= head;
-       for(int i=0;i<start;i++){
-        temp=temp->next;
-       }
-       List<T>* result = new Image<T>();
-        for(int i=start; i  < this->size && i < end;i++){
-            result->push_back(temp->pointer);
-             temp=temp->next;
+    // List<T>* subList(int start, int end){
+    //    if(this->size<=start) return nullptr;
+    //    Node *temp= head;
+    //    for(int i=0;i<start;i++){
+    //     temp=temp->next;
+    //    }
+    //    List<T>* result = new Image<T>();
+    //     for(int i=start; i  < this->size && i < end;i++){
+    //         result->push_back(temp->pointer);
+    //          temp=temp->next;
+    //     }
+
+    //     return result;
+
+    // }
+    void printTtoE(int start, int end){
+        end=min(end,this->size-1);
+        if (start < 0 || start >= this->length() || end < start)
+        {
+            return;
         }
-
-        return result;
-
+        Node *pointer = head;
+        for (int i = 0; i < start; i++)
+        {
+            pointer = pointer->next;
+        }
+        for (int i = start; i <= end && pointer != nullptr; i++)
+        {
+            cout << pointer->pointer;
+            if (i != end)
+            {
+                cout << " ";
+            }
+            pointer = pointer->next;
+        }
     }
+   
 
 
 };
@@ -220,6 +244,7 @@ public:
     void getShape(int& nRows, int& nCols) const;
     void columns() const;
     List<List<int>*>* getData() const;
+    
      double score(const Dataset& y_test) const
     {   
           if (this->data->length() != y_test.data->length()) return -1;
@@ -234,103 +259,57 @@ public:
     }
     return static_cast<double>(correct_predictions) / this->data->length();
     }
-     Dataset predict(const Dataset& X_train, const Dataset& Y_train, const int k) const
-    {
-       Dataset result;
-result.NameCol = new Image<string>();
-// Giả sử NameCol của Y_train có dữ liệu, bạn cần copy cấu trúc này cho result
-result.NameCol->push_back("label");
-result.data = new Image<List<int>*>();
-    for (int i = 0; i < this->data->length(); ++i) {
-        List<int>* predictedLabelList = new Image<int>();
-    // Khởi tạo mảng để lưu khoảng cách và nhãn
-    double* distances = new double[X_train.data->length()];
-    int* indices = new int[X_train.data->length()];
-
-    // Tính khoảng cách
-    for (int j = 0; j < X_train.data->length(); ++j) {
-        distances[j] = this->distanceEuclidean(this->data->get(i), X_train.data->get(j));
-        indices[j] = j; // Lưu chỉ số để sau này có thể truy xuất nhãn
-    }
+    Dataset predict(const Dataset& X_train, const Dataset& Y_train, const int k) const;
     
-   quickSelect(distances, indices, 0, X_train.data->length()-1 , k);     
-   
-      int labelCounts[10] = {0,0,0,0,0,0,0,0,0,0};
-    for (int idx = 0; idx < k; ++idx) {
-    int label = Y_train.data->get(indices[idx])->get(0);
-    labelCounts[label]++;
-    }
     
 
-int mostFrequentLabel = 0, maxCount = 0;
-for (int idx = 0; idx < 10; ++idx) {
-    // Nếu tìm thấy nhãn với số lần xuất hiện cao hơn, hoặc bằng nhưng nhãn có giá trị nhỏ hơn
-    if (labelCounts[idx] > maxCount || (labelCounts[idx] == maxCount && idx < mostFrequentLabel)) {
-        mostFrequentLabel = idx;
-        maxCount = labelCounts[idx];
-    }
-
-}
-    
-   
-    // Giả sử Image<int> là subclass của List<int>
-    predictedLabelList->push_back(mostFrequentLabel);
- 
-    result.data->push_back(predictedLabelList);   
-  
-    delete[] distances;
-    delete[] indices;
-}
-    return result;
-}
-    
-    
-double distanceEuclidean(const List<int>* x, const List<int>* y) const;
 
 
 void printHead(int nRows=5 , int nCols=5 ) const
     {    
     if (this->data->length() == 0 || this->NameCol->length() == 0||nRows<=0||nCols<=0) {
-        
         return;
     }
 
     
-    nCols = (nCols < 0) ? this->NameCol->length() : min(nCols, static_cast<int>(this->NameCol->length()));
-
+   int nCols1 = min(nCols, this->data->length());
+   this->NameCol->printTtoE(0,nCols1-1);
+   cout << endl;
    
-    for (int col = 0; col < nCols; ++col) {
-        if(col!=nCols-1){
-        cout << this->NameCol->get(col) << " ";
-    }   
-    else cout << this->NameCol->get(col) << endl;
+    // for (int col = 0; col < nCols; ++col) {
+    //     if(col!=nCols-1){
+    //     cout << this->NameCol->get(col) << " ";
+    // }   
+    // else cout << this->NameCol->get(col) << endl;
 
-    }
-    
-
+    // }
    
-    nRows = min(nRows, static_cast<int>(this->data->length()));
-
-   
-    for (int row = 0; row < nRows; ++row) {
-      
-        List<int>* currentRow = this->data->get(row);
-
+  int  nRows1 = min(nRows, this->data->length());
+    for(int i=0;i<nRows;++i){
+        this->data->get(i)->printTtoE(0,nCols1-1);
+        if(i==nRows1-1) break;
+        else cout << endl;
        
-        cout << currentRow->get(0);
-    if(row!=nRows-1){
-        for (int col = 1; col < nCols; ++col) {
-            cout << " " << currentRow->get(col);
-        }
-        cout << endl;
     }
-    else{
-         for (int col = 1; col < nCols; ++col) {
-            cout << " " << currentRow->get(col);
-        }
-    }
+
+   
+    // for (int row = 0; row < nRows; ++row) {
+      
+    //     List<int>* currentRow = this->data->get(row);
+    //     cout << currentRow->get(0);
+    // if(row!=nRows-1){
+    //     for (int col = 1; col < nCols; ++col) {
+    //         cout << " " << currentRow->get(col);
+    //     }
+    //     cout << endl;
+    // }
+    // else{
+    //      for (int col = 1; col < nCols; ++col) {
+    //         cout << " " << currentRow->get(col);
+    //     }
+    // }
     
-    }
+    // }
     
     }
         
@@ -341,42 +320,23 @@ void printTail(int nRows = 5, int nCols = 5) const
         return;
     }
 
-    int totalRows = this->data->length();
-    nRows = nRows > totalRows ? totalRows : nRows;
-    int totalCols = this->NameCol->length();
-    nCols = nCols < 0 ? totalCols : min(nCols, totalCols);
+    int TRows = this->data->length();
+    nRows = nRows > TRows ? TRows : nRows;
+    int TCols = this->NameCol->length();
+    nCols = nCols < 0 ? TCols : min(nCols, TCols);
 
     // Calculate the starting index for rows to begin printing from
-    
-     for (int col = totalCols - nCols; col < totalCols; ++col) {
-        
-        if(col!=totalCols-1){
-        cout << this->NameCol->get(col) << " ";
-    }   
-    else cout << this->NameCol->get(col);
-    }
+    nCols = min(nCols, this->NameCol->length());
+    this->NameCol->printTtoE(this->NameCol->length() - nCols, this->NameCol->length() - 1);
     cout << endl;
-    // Print the last nRows of data
-    int startRow = totalRows - nRows;
-    for (int row = startRow; row < totalRows; ++row) {
-        List<int>* currentRow = this->data->get(row);
-        int startCol = max(0, currentRow->length() - nCols); // Calculate the starting column index
-       if(row!= totalRows-1){
-        for (int col = startCol; col < currentRow->length(); ++col) {
-            if (col > startCol) cout << " ";
-            cout << currentRow->get(col);
-        }
-        cout << endl;
-       } else {
-        for (int col = startCol; col < currentRow->length(); ++col) {
-            if (col > startCol) cout << " ";
-            cout << currentRow->get(col);
-        }
-
-
-       }
-   
+    nRows = min(nRows, this->data->length());
+    for (int j = this->data->length() - nRows; j < this->data->length(); ++j)
+    {
+        this->data->get(j)->printTtoE(this->data->get(j)->length() - nCols, this->data->get(j)->length() - 1);
+        if (j == this->data->length() - 1) break;
+        else cout << endl;
     }
+ 
     }
     
 bool drop(int axis = 0, int index = 0, string columns = "")
@@ -417,14 +377,14 @@ bool drop(int axis = 0, int index = 0, string columns = "")
     }
 Dataset extract(int startRow = 0, int endRow = -1, int startCol = 0, int endCol = -1) const
     {
-
+    if (  endRow < -1 || endCol < -1 || startRow > endRow && endRow != -1 || startCol > endCol && endCol != -1) {
+        throw out_of_range("get(): Out of range");
+    }
      Dataset extracted;
-    int adjustedEndRow = (endRow == -1) ? this->data->length()-1  : endRow;
-    int adjustedEndCol = (endCol == -1) ? this->NameCol->length() - 1 : endCol;
+    int adjustedEndRow = (endRow == -1) ? this->data->length()-1  : std::min(endRow, this->data->length() - 1);
+    int adjustedEndCol = (endCol == -1) ? this->NameCol->length() - 1 : std::min(endCol, this->NameCol->length() - 1);
    
 
-   adjustedEndRow = std::min(adjustedEndRow, this->data->length() - 1);
-   adjustedEndCol = std::min(adjustedEndCol, this->NameCol->length() - 1);
 
     for (int col = startCol; col <= adjustedEndCol; ++col) {
         extracted.NameCol->push_back(this->NameCol->get(col));
@@ -448,19 +408,34 @@ Dataset extract(int startRow = 0, int endRow = -1, int startCol = 0, int endCol 
 
 class kNN {
 private:
-    int k;
-    Dataset X_train;
-    Dataset Y_train;
-    //You may need to define more
+int k;
+Dataset X_train;
+Dataset Y_train;
+ // access Dataset data form ImageClass
+//You may need to define more
 public:
-    kNN(int k = 5):k(5){};
-    void fit(const Dataset& X_train, const Dataset& y_train);
-    Dataset predict(const Dataset& X_test);
-   
-     double score(const Dataset& y_test, const Dataset& y_pred);
-};
+kNN(int k = 5):k(k){};
+void fit(const Dataset& x_train, const Dataset& y_train)
+{
+this->X_train = x_train;
+this->Y_train = y_train;
+}
+Dataset predict(const Dataset& X_test) const;
 
+
+double score(const Dataset& y_test, const Dataset& y_pred) const;
+
+
+
+// List<List<int>*>* getDataFromDataset() const {}
+
+};
 void train_test_split(Dataset& X, Dataset& y, double test_size, 
                         Dataset& X_train, Dataset& X_test, Dataset& y_train, Dataset& y_test);
 
 // Please add more or modify as needed
+
+
+
+
+    double distanceEuclidean(const List<int>* x, const List<int>* y);

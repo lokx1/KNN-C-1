@@ -35,6 +35,7 @@ Dataset::~Dataset()
 }
 Dataset::Dataset(const Dataset& other)
 {
+    this->data = new Image<List<int>*>();
      this->NameCol = new Image<string>();
 
 
@@ -42,8 +43,6 @@ Dataset::Dataset(const Dataset& other)
     this->NameCol->push_back(other.NameCol->get(i));
 }
 
-    
-    this->data = new Image<List<int>*>();
 
   
     for (int i = 0; i < other.data->length(); ++i) {
@@ -126,15 +125,17 @@ bool Dataset::loadFromCSV(const char* fileName)
     return true;
 }
 void Dataset::getShape(int& nRows, int& nCols) const {
+
    nRows = this->data->length();
     nCols = (nRows > 0) ? this->data->get(0)->length() : 0;
+  
 }
 void Dataset::columns() const
 {  this->NameCol->print();
 }
 
 List<List<int> *> *Dataset::getData() const
-{ return data;
+{ return this->data;
     
 }
 
@@ -143,18 +144,14 @@ List<List<int> *> *Dataset::getData() const
 //**********************************************************************
 
 
-void kNN::fit(const Dataset& X_train, const Dataset& y_train)
+
+
+Dataset kNN::predict(const Dataset& X_test) const
 {
-    this->X_train = X_train;
-    this->Y_train = y_train;
+     return X_test.predict(X_train,Y_train,k);
 }
 
-Dataset kNN::predict(const Dataset& X_test)
-{
-     return X_test.predict(this->X_train,this->Y_train,this->k);
-}
-
-double kNN::score(const Dataset& y_test, const Dataset& y_pred)
+double kNN::score(const Dataset& y_test, const Dataset& y_pred) const
 {
     return y_test.score(y_pred);
 }
@@ -176,12 +173,12 @@ int partition(double *arr, int *labels, int low, int high)
     return (i + 1);
 }
 
-void quickSelect(double* arr, int* labels, int low, int high, int k) {
+void quickSelect(double* arr, int* labels, int low, int high) {
     if (low < high) {
         int pi = partition(arr, labels, low, high);
 
-        if (pi > k) quickSelect(arr, labels, low, pi - 1, k);
-        if (pi < k) quickSelect(arr, labels, pi + 1, high, k);
+        quickSelect(arr, labels, low, pi - 1);
+         quickSelect(arr, labels, pi + 1, high);
     }
 }
 
@@ -189,45 +186,88 @@ void quickSelect(double* arr, int* labels, int low, int high, int k) {
 //**********************************************************************
 //* hàm train_test_split
 //**********************************************************************
-void train_test_split(Dataset& X, Dataset& Y, double test_size, 
+void train_test_split(Dataset& X, Dataset& Y, double testsize, 
                         Dataset& X_train, Dataset& X_test, 
                         Dataset& Y_train, Dataset& Y_test)
 {
-  if (test_size >= 1 || test_size <= 0)
-    {
-        return;
+  if (X.getData()->length() != Y.getData()->length() || testsize >= 1 || testsize <= 0)
+return;
+
+double min = 1.0e-15;
+int nrow = X.getData()->length();
+double rt = nrow * (1 - testsize);
+
+if (abs(round(rt) - rt) < min * nrow)
+rt = round(rt);
+
+X_train = X.extract(0, rt - 1, 0, -1);
+Y_train = Y.extract(0, rt - 1, 0, -1);
+
+X_test = X.extract(rt, -1, 0, -1);
+Y_test = Y.extract(rt, -1, 0, -1);
+
+}
+
+Dataset Dataset::predict(const Dataset &X_train, const Dataset &Y_train, const int k) const
+{
+      Dataset result;
+    result.NameCol = new Image<string>();
+    result.NameCol->push_back("label");
+    result.data = new Image<List<int>*>();
+    
+    for (int i = 0; i < this->data->length(); ++i) {
+        List<int>* predictedLabelList = new Image<int>();
+        double* distances = new double[X_train.data->length()];
+        int* indices = new int[X_train.data->length()];
+
+        for (int j = 0; j < X_train.data->length(); ++j) {
+            distances[j] = distanceEuclidean(this->data->get(i), X_train.data->get(j));
+            indices[j] = j;
+        }
+
+       
+
+       quickSelect(distances,indices,0,X_train.data->length()-1);
+       
+        int labelCounts[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        for (int i = 0; i < k; i++)
+        {   
+            int label = Y_train.data->get(indices[i])->get(0);
+            labelCounts[label]++;
+        }
+         
+
+        int mostFrequentLabel = 0, maxCount = 0;
+        for (int idx = 0; idx < 10; ++idx) {
+            if (labelCounts[idx] > maxCount || (labelCounts[idx] == maxCount && idx < mostFrequentLabel)) {
+                mostFrequentLabel = idx;
+                maxCount = labelCounts[idx];
+            }
+        }
+
+        predictedLabelList->push_back(mostFrequentLabel);
+        result.data->push_back(predictedLabelList);
+        delete []distances;
+        delete []indices;
     }
 
-    //* phân chia phần train
-    int xRows, xCols, yRows, yCols;
-    X.getShape(xRows, xCols);
-    Y.getShape(yRows, yCols);
-
-    X_train = X.extract(0, (1 - test_size) * xRows-1, 0, -1);
-
-    Y_train = Y.extract(0, (1 - test_size) * yRows-1, 0, 0);
-   
-    //* phân chia phần test
-
-    X_test = X.extract((1 - test_size) * xRows , xRows, 0, -1);
-
-    Y_test = Y.extract((1 - test_size) * yRows , yRows, 0, 0);
-  
+    return result;
 }
 
 
-double Dataset:: distanceEuclidean(const List<int>* x, const List<int>* y) const{
-        //TODO: implement Task 2 copy code từ implement Task 1 chỉnh
-     double sum = 0.0;
-    int length = std::min(x->length(), y->length()); // Use the smaller length if they differ, but ideally, they should be the same
+double distanceEuclidean(const List<int> *x, const List<int> *y) 
+{
 
-    for (int i = 0; i < length; ++i) {
-        double diff = x->get(i) - y->get(i);
-        sum += diff * diff;
+    if (x->length() != y->length())
+    {
+        return 0;
     }
-
-    return std::sqrt(sum);
-
-
-
+    double kc = 0;
+    for (int i = 0; i < x->length(); i++)
+    {
+        kc += pow(x->get(i) - y->get(i), 2);
     }
+    return sqrt(kc);
+}
+
+

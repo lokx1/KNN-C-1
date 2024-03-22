@@ -22,10 +22,47 @@
 
 #include "kNN.hpp"
 #include <vector>
-
+#include <chrono>
 bool isNumber(string str);
 void comparefile(int start, int end);
+void tc_knn_p(int k, int size_X){
+int nRows, nCols;
+Dataset dataset;
+dataset.loadFromCSV("mnist.csv");
 
+kNN knn = kNN(k);
+Dataset X_train, X_test, y_train, y_test;
+Dataset feature = dataset.extract(0, size_X, 1, -1);
+Dataset label = dataset.extract(0, size_X, 0, 0);
+
+train_test_split(feature, label, 0.2, X_train, X_test, y_train, y_test);
+knn.fit(X_train, y_train);
+Dataset y_pred = knn.predict(X_test);
+
+cout << "y_pred" << endl;
+y_pred.printHead(10, 10);
+cout << endl;
+cout << "y_test" << endl;
+y_test.printHead(10, 10);
+cout << endl;
+}
+
+void tc_knn_score(int k, int size_X){
+int nRows, nCols;
+Dataset dataset;
+dataset.loadFromCSV("mnist.csv");
+
+kNN knn = kNN(k);
+Dataset X_train, X_test, y_train, y_test;
+Dataset feature = dataset.extract(0, size_X, 1, -1);
+Dataset label = dataset.extract(0, size_X, 0, 0);
+
+train_test_split(feature, label, 0.2, X_train, X_test, y_train, y_test);
+knn.fit(X_train, y_train);
+Dataset y_pred = knn.predict(X_test);
+double accuracy = knn.score(y_test, y_pred);
+cout << "Accuracy: " << accuracy << endl;
+}
 void run_task_3(string fileName)
 {
     Dataset dataset;
@@ -170,20 +207,34 @@ void run_task_3(string fileName)
 //* ./main task1; ./main task2; ./main task3;
 //* ./main i j (với i với j là số từ test i -> j)
 //* ./main i (i là test cần test)
+void tc2(){Dataset dataset;
+    dataset.loadFromCSV("mnist.csv");
+    List<int>* row = dataset.getData()->get(0);
+    for(int j = 0; j < 35; j++){
+        for(int i = 0; i < 10000000; i++){
+            row->insert(0, 1);
+        }
+        for(int i = 0; i < 10000000; i++){
+            row->remove(0);
+        }
+    }
+    cout << row->length();}
 void tc1(){
     Dataset dataset;
     dataset.loadFromCSV("mnist.csv");
+   
     int nRows, nCols;
     dataset.getShape(nRows, nCols);
     cout << "Shape: " << nRows << "x" << nCols << endl;
     kNN knn;
     Dataset X_train, X_test, y_train, y_test;
-    Dataset feature = dataset.extract(0, 120, 1, -1);
-    Dataset label = dataset.extract(0, 120, 0, 0);
-    train_test_split(feature, label, 0.65, X_train, X_test, y_train, y_test);
+    Dataset feature = dataset.extract(0,-1 , 1, -1);
+    Dataset label = dataset.extract(0, -1, 0, 0);
+
+    train_test_split(feature, label, 0.2, X_train, X_test, y_train, y_test);
     knn.fit(X_train, y_train);
     Dataset y_pred = knn.predict(X_test);
-
+    cout << endl;
     double accuracy = knn.score(y_test, y_pred);
     cout << accuracy << endl;
 }
@@ -240,14 +291,37 @@ row->push_back(1);
 cout << row->length() << endl;
 row->print();
 }
+void tc1013()
+{
+Dataset dataset;
+dataset.loadFromCSV("mnist.csv");
+List<int> *row = dataset.getData()->get(0);
+
+row->push_front(1);
+row->push_front(0);
+
+cout << row->length();
+}
 int main(int argc, char *argv[])
 {
-      
- 	
-    tc1();
+      //tc1002();
+ 	//tc1();
 
-   
-   
+
+Dataset dataset;
+dataset.loadFromCSV("mnist.csv");
+List<int> *row = dataset.getData()->get(0);
+
+row->insert(0, 1);
+row->insert(1, 3);
+row->insert(2, 2);
+row->insert(3, 5);
+row->insert(4, 2);
+row->insert(5, 3);
+row->insert(6, 1);
+
+cout << row->length() << endl;
+row->print();
     // cout << "Start program assignments 1 DSA" << endl;
 
     // int START = 0, END = 0;

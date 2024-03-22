@@ -1,6 +1,0 @@
-k = 5
-test_size = 0.29
-drop 1 18 1x1 
-getShape
-columns
-printHead 100 100
