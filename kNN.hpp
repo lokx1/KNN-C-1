@@ -164,7 +164,7 @@ public:
     if(size==0) return;
     Node* temp = head;
     while (temp != nullptr) {
-        cout << temp->pointer << (temp->next ? " " : "\n");
+        cout << temp->pointer << (temp->next ? " " : "");
         temp = temp->next;
     }
     }
@@ -214,7 +214,7 @@ public:
         for (int i = start; i <= end && pointer != nullptr; i++)
         {
             cout << pointer->pointer;
-            if (i != end)
+            if (i < end)
             {
                 cout << " ";
             }
@@ -276,13 +276,7 @@ void printHead(int nRows=5 , int nCols=5 ) const
    this->NameCol->printTtoE(0,nCols1-1);
    cout << endl;
    
-    // for (int col = 0; col < nCols; ++col) {
-    //     if(col!=nCols-1){
-    //     cout << this->NameCol->get(col) << " ";
-    // }   
-    // else cout << this->NameCol->get(col) << endl;
-
-    // }
+ 
    
   int  nRows1 = min(nRows, this->data->length());
     for(int i=0;i<nRows;++i){
@@ -293,24 +287,7 @@ void printHead(int nRows=5 , int nCols=5 ) const
     }
 
    
-    // for (int row = 0; row < nRows; ++row) {
-      
-    //     List<int>* currentRow = this->data->get(row);
-    //     cout << currentRow->get(0);
-    // if(row!=nRows-1){
-    //     for (int col = 1; col < nCols; ++col) {
-    //         cout << " " << currentRow->get(col);
-    //     }
-    //     cout << endl;
-    // }
-    // else{
-    //      for (int col = 1; col < nCols; ++col) {
-    //         cout << " " << currentRow->get(col);
-    //     }
-    // }
-    
-    // }
-    
+   
     }
         
     

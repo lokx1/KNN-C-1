@@ -308,20 +308,19 @@ int main(int argc, char *argv[])
  	//tc1();
 
 
+
+
 Dataset dataset;
 dataset.loadFromCSV("mnist.csv");
 List<int> *row = dataset.getData()->get(0);
 
-row->insert(0, 1);
-row->insert(1, 3);
-row->insert(2, 2);
-row->insert(3, 5);
-row->insert(4, 2);
-row->insert(5, 3);
-row->insert(6, 1);
+row->push_front(1);
+row->push_front(0);
+row->push_front(0);
 
 cout << row->length() << endl;
 row->print();
+
     // cout << "Start program assignments 1 DSA" << endl;
 
     // int START = 0, END = 0;
